@@ -6,6 +6,11 @@ extern "C" {
 #include "XSUB.h"
 #include "Av_CharPtrPtr.h"  /* XS_*_charPtrPtr() */
 #include "Av_IntPtr.h"  /* XS_*_intPtr() */
+#ifdef sun
+/*This is to fix a problem in lsf.h regarding LS_WAIT_T*/
+#define SVR4 1 
+#include <netdb.h>
+#endif
 #include <lsf/lsf.h>
 #ifdef __cplusplus
 }
@@ -152,7 +157,7 @@ ls_gethostinfo( self, resreq, hostlist, options )
 	LSF_Base_hostInfo *hi, *p;
 	char **c, **hl;
     PPCODE:
-	for( c = hostlist; *c; c++ ) count++;
+	for( c = hostlist; hostlist && *c; c++ ) count++;
 	if( count == 0 ) hostlist = NULL;
 	hi = ls_gethostinfo(resreq, &num, hostlist, count, options );
 	if(hi == NULL){
@@ -177,7 +182,7 @@ ls_readconfenv(self, env, path)
 	int i, count=0;
 	char **p;
     PPCODE:
-	for( p = env; *p; p++ ) count++;
+	for( p = env; env && *p; p++ ) count++;
 	param = safemalloc(sizeof(struct config_param)*count + 1);
 	for( i=0; i<count; i++){
 	    param[i].paramName = env[i];
@@ -510,7 +515,7 @@ ls_loadofhosts( self, resreq, numhosts, options, fromhost, hostlist )
     PPCODE:
 	num = numhosts;
         count = 0;
-      	for( c = hostlist; *c; c++ ) count++;
+      	for( c = hostlist; hostlist && *c; c++ ) count++;
 	if( count == 0 ) hostlist = NULL;
 	if(strlen(fromhost)==0) fromhost = NULL;
 	hl = ls_loadofhosts( resreq, &num, options, fromhost, hostlist, count);
@@ -568,7 +573,7 @@ ls_placeofhosts( self, resreq, numhosts, options, fromhost, hostlist )
 	int num, i,count=0;
     PPCODE:
 	num = numhosts;
-       	for( c = hostlist; *c; c++ ) count++;
+       	for( c = hostlist; hostlist && *c; c++ ) count++;
 	if(strlen(fromhost)==0) fromhost = NULL;
 	list = ls_placeofhosts( resreq, &num, options, fromhost, 
                              hostlist, count);

@@ -26,6 +26,7 @@ print "ok 2\n";
 my $myhost = $base->getmyhostname;
 my $master = $base->getmastername;
 my $cluster = $base->getclustername;
+#print $cluster,"\n";
 my $hostType = $base->gethosttype($master);
 my $hostModel = $base->gethostmodel($master);
 my $factor = $base->getmodelfactor($hostModel);

@@ -87,8 +87,8 @@ donerex*
 conntaskport
 
 #rusage
-utime_sec
-utime_usec
+utime_sec*
+utime_usec*
 stime_sec
 stime_usec
 maxrss
@@ -107,13 +107,13 @@ nvcsw
 nivcsw
 
 #LSF::Base
-ropen
-rclose
-rwrite
-rread
-rlseek
-rfstat
-rstat
+ropen*
+rclose*
+rwrite*
+rread*
+rlseek*
+rfstat*
+rstat*
 getmnthost
 rgetmnthost
 rfcontrol
