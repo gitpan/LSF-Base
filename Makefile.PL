@@ -24,16 +24,22 @@ warn "Found LSF_INCLUDEDIR: $lsfInc\n";
 $os = `uname`;
 warn "Found OS: $os\n";
 
-for($os){
-  /AIX/ && do{$libs = "-L$lsfLib -llsf -lbsd";};
-  /SunOS/ && do{$libs = "-L$lsfLib -llsf -lnsl -lsocket";};
+OS: for($os){
+  /OSF1/ && do{$libs = "-L$lsfLib -llsf -lmach -lmld"; last OS};
+  /AIX/ && do{$libs = "-L$lsfLib -llsf -lbsd";last OS};
+  /SunOS/ && do{$libs = "-L$lsfLib -llsf -lnsl -lefl -lsocket -lrpcsvc -lgen -ldl"; last OS};
+  /Linux/ && do{$libs = "-L$lsfLib -llsf"; last OS};
+  print "$os is not supported at this time. Modify Makefile.PL with\n";
+  print "proper compilation options for you OS and please forward them\n";
+  print "to paul\@capita.com\n";
+  exit;
 }
 
 WriteMakefile(
     'NAME'	=> 'LSF::Base',
     'VERSION_FROM' => 'Base.pm',
     'LIBS'	=> [$libs ],
-    'DEFINE'	=> '',
+    'DEFINE'	=> '-DPERL_POLLUTE',
     'OBJECT'	=> '$(O_FILES)',
     'INC'	=> "-I$lsfInc"
 );

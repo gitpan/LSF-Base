@@ -4,6 +4,7 @@ extern "C" {
 #include "EXTERN.h"
 #include "perl.h"
 #include "XSUB.h"
+#include "ppport.h"
 #include "Av_CharPtrPtr.h"  /* XS_*_charPtrPtr() */
 #include "Av_IntPtr.h"  /* XS_*_intPtr() */
 #ifdef sun
@@ -14,6 +15,9 @@ extern "C" {
 #include <lsf/lsf.h>
 #ifdef __cplusplus
 }
+#endif
+#ifndef PL_errgv
+#define PL_errgv errgv
 #endif
 
 /*general cluster information*/
@@ -29,7 +33,7 @@ typedef struct hostLoad LSF_Base_hostLoad;
 typedef struct rusage LSF_Base_rusage;
 
 /*set $@ to lsf error message*/
-#define SET_LSF_ERRMSG sv_setpv(GvSV(errgv),ls_sysmsg())
+#define SET_LSF_ERRMSG sv_setpv(GvSV(PL_errgv),ls_sysmsg())
 
 static int li_ni = 0;
 
@@ -166,8 +170,8 @@ ls_gethostinfo( self, resreq, hostlist, options )
 	    XSRETURN_EMPTY;
  	}
 	for( i = 0, p = hi; i < num; i++,p++ ){
-	    rv = newRV(&sv_undef);
-	    sv_setref_iv(rv, "LSF::Base::hostInfoPtr",(I32)p);
+	    rv = newRV_inc(&PL_sv_undef);
+	    sv_setref_iv(rv, "LSF::Base::hostInfoPtr",(IV)p);
 	    XPUSHs(sv_2mortal(rv));
 	}
 	XSRETURN(num);
@@ -211,8 +215,8 @@ li_resTable(self)
 	LSF_Base_resItem *p;
     PPCODE:
 	for( i = 0,p =self->resTable; i < self->nRes; i++,p++ ){
-	    rv = newRV(&sv_undef);
-	    sv_setref_iv(rv, "LSF::Base::resItemPtr",(I32)p);
+	    rv = newRV_inc(&PL_sv_undef);
+	    sv_setref_iv(rv, "LSF::Base::resItemPtr",(IV)p);
 	    XPUSHs(sv_2mortal(rv));
 	}
 	XSRETURN(self->nRes);
@@ -236,6 +240,29 @@ li_hostModels(self)
     PPCODE:
 	for( i = 0; i < self->nModels; i++ ){
 	    XPUSHs(sv_2mortal(newSVpv(self->hostModels[i],0)));
+	}
+	XSRETURN(self->nModels);
+
+void
+li_hostArchs(self)
+	LSF_Base_lsInfo *self;
+    PREINIT:
+	int i;
+    PPCODE:
+	for( i = 0; i < self->nTypes; i++){
+	    XPUSHs(sv_2mortal(newSVpv(self->hostArchs[i],0)));
+	}
+	XSRETURN(self->nTypes);
+
+void
+li_modelRefs(self)
+	LSF_Base_lsInfo *self;
+    PREINIT:
+	int i;
+	float *p;
+    PPCODE:
+	for( i = 0,p = self->modelRefs; i < self->nModels; i++,p++ ){
+	    XPUSHs(sv_2mortal(newSViv((int)*p)));
 	}
 	XSRETURN(self->nModels);
 
@@ -482,8 +509,8 @@ ls_load( self, resreq, numhosts, options, fromhost )
  	}
 	/*num contains number of records*/
 	for( i = 0, p = hl; i < num; i++,p++ ){
-	    rv = newRV(&sv_undef);
-	    sv_setref_iv(rv, "LSF::Base::hostLoadPtr", (I32)p);
+	    rv = newRV_inc(&PL_sv_undef);
+	    sv_setref_iv(rv, "LSF::Base::hostLoadPtr", (IV)p);
 	    XPUSHs(sv_2mortal(rv));
 	}
 	XSRETURN(num);
@@ -525,8 +552,8 @@ ls_loadofhosts( self, resreq, numhosts, options, fromhost, hostlist )
 	    XSRETURN_EMPTY;
  	}
 	for( i = 0, p = hl; i < num; i++,p++ ){
-	    rv = newRV(&sv_undef);
-	    sv_setref_iv(rv, "LSF::Base::hostLoadPtr", (I32)p);
+	    rv = newRV_inc(&PL_sv_undef);
+	    sv_setref_iv(rv, "LSF::Base::hostLoadPtr", (IV)p);
 	    XPUSHs(sv_2mortal(rv));
 	}
 	XSRETURN(num);
@@ -941,8 +968,8 @@ ls_rwait(self, options)
         }
 	STATUS_NATIVE_SET(status);
 	XPUSHs(sv_2mortal(newSViv(tid)));
-	rv = newRV(&sv_undef);
-	sv_setref_iv(rv, "LSF::Base::rusagePtr",(I32)ru);
+	rv = newRV_inc(&PL_sv_undef);
+	sv_setref_iv(rv, "LSF::Base::rusagePtr",(IV)ru);
 	XPUSHs(sv_2mortal(rv));
 	XSRETURN(2);
 
@@ -964,8 +991,8 @@ ls_rwaittid(self, tid, options)
 	   XSRETURN_UNDEF;
 	}
 	STATUS_NATIVE_SET(status);
-	rv = newRV(&sv_undef);
-	sv_setref_iv(rv, "LSF::Base::rusagePtr",(I32)ru);
+	rv = newRV_inc(&PL_sv_undef);
+	sv_setref_iv(rv, "LSF::Base::rusagePtr",(IV)ru);
 	XPUSHs(sv_2mortal(rv));
 	XSRETURN(1);
 
@@ -1319,7 +1346,7 @@ ls_rwrite(self, rfd, buf, len)
 	   }
         }
 	else{
-	   sv_setpv(GvSV(errgv),
+	   sv_setpv(GvSV(PL_errgv),
                     "rwrite: buffer is smaller than requested write");
 	   XSRETURN_UNDEF;
         }
@@ -1551,8 +1578,8 @@ ls_rescontrol(self, host, opCode, data)
  #	   SET_LSF_ERRMSG;
  #	   XSRETURN_UNDEF;
  #	}
- #	rv = newRV(&sv_undef);
- #	sv_setref_iv(rv, "LSF::Base::lsfAcctRecPtr",(I32)ar);
+ #	rv = newRV_inc(&PL_sv_undef);
+ #	sv_setref_iv(rv, "LSF::Base::lsfAcctRecPtr",(IV)ar);
  #	XPUSHs(sv_2mortal(rv));
  #	XSRETURN(1);
 
@@ -1636,8 +1663,8 @@ ls_rescontrol(self, host, opCode, data)
 #    PREINIT:
 #	SV* rv;
 #    PPCODE:
-#	rv = newRV(&sv_undef);
-#	sv_setref_iv(rv, "LSF::Base::rusagePtr",(I32)&self->lsfRu);
+#	rv = newRV_inc(&PL_sv_undef);
+#	sv_setref_iv(rv, "LSF::Base::rusagePtr",(IV)&self->lsfRu);
 #	XPUSHs(sv_2mortal(rv));
 #	XSRETURN(1);
 

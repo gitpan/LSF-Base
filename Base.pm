@@ -53,7 +53,7 @@ RES_CMD_LOGOFF LIM_CMD_REBOOT LIM_CMD_SHUTDOWN
 #   []
 #);
 
-$VERSION = '0.03';
+$VERSION = '0.04';
 
 bootstrap LSF::Base $VERSION;
 
@@ -230,6 +230,8 @@ Computing Corporation's Load Sharing Facility (LSF) Base product.
 
   @types   = $info->hostTypes
   @models  = $info->hostModels;
+  @archs   = $info->hostArchs;
+  @narch   = $info->modelRefs;
   @factors = $info->cpuFactor;
   $n_index = $info->numIndx;
   $n_usr   = $info->numUsrIndx;
@@ -251,11 +253,11 @@ Computing Corporation's Load Sharing Facility (LSF) Base product.
   @hosts = qw(skynet alpha60 wopr ghostwheel);
 
   # passing in @hosts restricts the results to the listed
-  # hosts. Number = 0 returns as many as possible
-  @hostinfo = $base->gethostinfo($resreq, $numhosts, \@hosts, $options);
+  # hosts. 
+  @hostinfo = $base->gethostinfo($resreq, \@hosts, $options);
 
-  #passing 10 returns up to 10 machines.
-  @hostinfo = $base->gethostinfo($resreq, $numhosts, undef, $options);
+  #return information on all hosts.
+  @hostinfo = $base->gethostinfo($resreq, NULL, $options);
 
   $hi = $hostinfo[0];
 
@@ -437,9 +439,9 @@ information and placement advice, Task list manipulation, Remote
 execution and task control, Remote file operations, Administration,
 and Error handling.
 
-This library is designed to be used with LSF version 3.2. Please see
-the "LSF Programmer's guide" and the LSF man pages for detailed
-documentation of this API.
+This library is designed to be used with LSF version 3.2 or LSF
+4.0. Please see the "LSF Programmer's guide" and the LSF man pages for
+detailed documentation of this API.
 
 The data structures used in the API have been wrapped in Perl objects
 for ease of use. The functions set $@ and $? where appropriate, or you
@@ -453,13 +455,13 @@ in the documentation.
 
 =head1 AUTHOR
 
-Paul Franceus, RABA Technologies, Inc., paul@raba.com
+Paul Franceus, Capita Technologies, Inc., paul@capita.com
 
 =head1 SEE ALSO
 
 perl(1).
 LSF::Batch
-LSF 3.2 Programmer's guide
+LSF Programmer's guide
 lslib(3)
 LSF man pages for each function.
 

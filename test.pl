@@ -24,19 +24,32 @@ print "not " unless $base = new LSF::Base;
 print "ok 2\n";
 
 my $myhost = $base->getmyhostname;
+print "$myhost\n";
 my $master = $base->getmastername;
+print "$master\n";
 my $cluster = $base->getclustername;
-#print $cluster,"\n";
+print $cluster,"\n";
 my $hostType = $base->gethosttype($master);
+print $hostType,"\n";
 my $hostModel = $base->gethostmodel($master);
+print "$hostModel\n";
 my $factor = $base->getmodelfactor($hostModel);
+print "$factor\n";
 my $hostFactor = $base->gethostfactor($master);
+print "$hostFactor\n";
 my $lsinfo = $base->info();
 my @resTable = $lsinfo->resTable;
 my @types = $lsinfo->hostTypes;
 my @models = $lsinfo->hostModels;
 my @factors = $lsinfo->cpuFactor;
-
+print scalar(@resTable)," ",scalar(@models),"\n";
+print scalar(@types)," ", scalar(@factors),"\n";
+print @resTable[MEM]->name,"\n";
+print @resTable[MEM]->des,"\n";
+print @resTable[MEM]->orderType == DECR,"\n";
+print @resTable[MEM]->valueType == NUMERIC,"\n";
+print @resTable[MEM]->flags == (RESF_BUILTIN|RESF_DYNAMIC|RESF_GLOBAL),"\n";
+print @resTable[MEM]->interval,"\n";
 unless( @resTable > 0                    and
     @resTable[MEM]->name eq "mem"        and
     @resTable[MEM]->des =~ /^Available/  and
@@ -50,8 +63,8 @@ unless( @resTable > 0                    and
     @factors > 0                         and
     $cluster                             and
     $myhost                              and
-    $factor eq $hostFactor               and
-    grep $factor eq $_, @factors         and
+    $factor == $hostFactor               and
+    grep $factor == $_, @factors         and
     grep $hostModel eq $_, @models       and
     grep $hostType eq $_, @types
   ){
@@ -118,13 +131,13 @@ else{
 my @h1, %pl;
 ($place) = $base->placereq("r15m<2.0", 1, 0, undef);
 $err = $?;
-#print "$place\n";
+print "$place\n";
 push @h1,$place;
 ($place2) = $base->placeofhosts("r15m<2.0", 1, 0, undef, \@h1);
 $err2 = $?;
 $pl{$place} = 1;
-$err3 = !$base->loadadj("",\%pl);
-#print "$@, $err, $err2, $err3, $place, $place2\n";
+$err3 = !$base->loadadj("r1m",\%pl);
+print "$@, $err, $err2, $err3, $place, $place2\n";
 print "not " unless  !$err and !$err2 and !$err3 and $place eq $place2;
 print "ok 6\n";
 #################################################

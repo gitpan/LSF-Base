@@ -29,7 +29,7 @@ T_PTROBJ_SPECIAL
 OUTPUT
 T_PTROBJ_SPECIAL
     sv_setref_iv($arg, \"${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\",
-    (int)$var);
+    (IV)$var);
 
 FLOATPtr
 	sv_setnv($arg, (double) *$var );
