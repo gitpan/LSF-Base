@@ -44,6 +44,10 @@ Updated for LSF 4.0/4.1.
 Added support for other operating systems. Now works with Compaq Alpha,
 Linux, AIX and Solaris. Thanks to Ray Hookway at Compaq for Alpha changes.
 
+Version 0.05 3/29/2001
+
+Fixed a boneheaded mistake with 0.04...
+
 Any suggestions, comments, questions please send to me:
 
 Paul Franceus

@@ -259,7 +259,7 @@ li_modelRefs(self)
 	LSF_Base_lsInfo *self;
     PREINIT:
 	int i;
-	float *p;
+	int *p;
     PPCODE:
 	for( i = 0,p = self->modelRefs; i < self->nModels; i++,p++ ){
 	    XPUSHs(sv_2mortal(newSViv((int)*p)));
@@ -621,7 +621,8 @@ ls_loadadj(self, resreq, placeinfo)
 	HV*	placeinfo; 
     PREINIT:
 	HE*	entry;
-	int	sz, size, i=0, value, len;
+	int	sz, size, i=0, value;
+	I32	len;
 	char	*key;
 	struct placeInfo *pi;
     CODE:
@@ -1334,7 +1335,7 @@ ls_rwrite(self, rfd, buf, len)
 	int	len
     PREINIT:
 	char *b;
-	unsigned long l;
+	int l;
     CODE:
 	b = (char*)SvPV(buf,l);
 	if( len >= l ){
@@ -1477,6 +1478,8 @@ ls_rgetmnthost(self, host, file)
     OUTPUT:
 	RETVAL
 
+#if LSF_VERSION < 9
+
 int
 ls_rfcontrol(self, command, arg)
 	void	*self
@@ -1485,12 +1488,12 @@ ls_rfcontrol(self, command, arg)
     PREINIT:
 	char	*hostname;
 	int	max;
-	unsigned long len;
+	int	len;
     CODE:
 	switch(command){
 	  case RF_CMD_TERMINATE:
 	     hostname = (char *)SvPV(arg,len);
-  	     RETVAL = ls_rfcontrol(command, hostname);
+  	     RETVAL = ls_rfcontrol(command, (int)hostname);
 	     break;
 	  default: /*RF_CMD_MAXHOSTS and others*/
 	     /*let rfcontrol handle the case of a bad command*/
@@ -1505,7 +1508,39 @@ ls_rfcontrol(self, command, arg)
     OUTPUT:
 	RETVAL
 
-# Administration Operation 
+#else
+
+int
+ls_rfcontrol(self, command, arg)
+	void	*self
+	int 	command
+	int 	arg
+    CODE:
+        /*let rfcontrol handle the case of a bad command*/
+        RETVAL = ls_rfcontrol(command, arg);
+        if( RETVAL < 0 ){
+	   STATUS_NATIVE_SET(lserrno);
+	   SET_LSF_ERRMSG;
+	   XSRETURN_UNDEF;
+        }
+    OUTPUT:
+	RETVAL
+
+int
+ls_rfterminate(self, host)
+	void *self
+	char *host
+   CODE:
+	RETVAL = ls_rfterminate(host);
+        if( RETVAL < 0 ){
+	   STATUS_NATIVE_SET(lserrno);
+	   SET_LSF_ERRMSG;
+	   XSRETURN_UNDEF;
+        }
+    OUTPUT:
+	RETVAL
+
+#endif
 
 int 
 ls_lockhost(self, duration)

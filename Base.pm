@@ -53,7 +53,7 @@ RES_CMD_LOGOFF LIM_CMD_REBOOT LIM_CMD_SHUTDOWN
 #   []
 #);
 
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 bootstrap LSF::Base $VERSION;
 
