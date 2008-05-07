@@ -53,7 +53,7 @@ RES_CMD_LOGOFF LIM_CMD_REBOOT LIM_CMD_SHUTDOWN
 #   []
 #);
 
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 bootstrap LSF::Base $VERSION;
 
@@ -439,8 +439,8 @@ information and placement advice, Task list manipulation, Remote
 execution and task control, Remote file operations, Administration,
 and Error handling.
 
-This library is designed to be used with LSF version 3.2 or LSF
-4.0. Please see the "LSF Programmer's guide" and the LSF man pages for
+This library is designed to be used with LSF version 7.0 Update 2. Please see 
+the "LSF Programmer's guide" and the LSF man pages for
 detailed documentation of this API.
 
 The data structures used in the API have been wrapped in Perl objects
@@ -456,6 +456,10 @@ in the documentation.
 =head1 AUTHOR
 
 Paul Franceus, Capita Technologies, Inc., paul@capita.com
+
+=head1 Modifier
+
+ISV Team, Platform Computing Corporation, support@platform.com
 
 =head1 SEE ALSO
 

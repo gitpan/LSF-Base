@@ -5,7 +5,7 @@ extern "C" {
 #include "perl.h"
 #include "XSUB.h"
 #include "ppport.h"
-#include "Av_CharPtrPtr.h"  /* XS_*_charPtrPtr() */
+#include "Av_CharPtrPtr.h"   /*XS_*_charPtrPtr() */
 #include "Av_IntPtr.h"  /* XS_*_intPtr() */
 #ifdef sun
 /*This is to fix a problem in lsf.h regarding LS_WAIT_T*/
@@ -187,10 +187,13 @@ ls_readconfenv(self, env, path)
 	char **p;
     PPCODE:
 	for( p = env; env && *p; p++ ) count++;
-	param = safemalloc(sizeof(struct config_param)*count + 1);
+	param = safemalloc(sizeof(struct config_param)*(count + 1));
 	for( i=0; i<count; i++){
 	    param[i].paramName = env[i];
+	    param[i].paramValue = NULL;
 	}
+	param[count].paramName = NULL;
+	param[count].paramValue = NULL;
 	if( ls_readconfenv(param, path) < 0 ){
 	    STATUS_NATIVE_SET(lserrno);
             SET_LSF_ERRMSG;
@@ -199,7 +202,14 @@ ls_readconfenv(self, env, path)
 	}
 	for( i=0; i<count; i++){
 	    XPUSHs(sv_2mortal(newSVpv(param[i].paramName, 0)));	
-	    XPUSHs(sv_2mortal(newSVpv(param[i].paramValue, 0)));
+	    if(param[i].paramValue == NULL)
+	    {
+	        XPUSHs(sv_2mortal(newSVpv(param[i].paramValue, 1)));
+	    }
+	    else
+	    {
+	        XPUSHs(sv_2mortal(newSVpv(param[i].paramValue, 0)));
+	    }
 	}
 	safefree(param);
 	XSRETURN(count*2);
@@ -963,6 +973,7 @@ ls_rwait(self, options)
 	ru = safemalloc(sizeof(LSF_Base_rusage));
 	tid = ls_rwait(&status, options, ru);
 	if( tid < 0 ){
+	   safefree(ru);
 	   STATUS_NATIVE_SET(lserrno);
 	   SET_LSF_ERRMSG;
            XSRETURN_EMPTY;
@@ -987,6 +998,7 @@ ls_rwaittid(self, tid, options)
 	ru = safemalloc(sizeof(LSF_Base_rusage));
 	tid = ls_rwaittid(tid, &status, options, ru);
 	if( tid < 0 ){
+	   safefree(ru);
 	   STATUS_NATIVE_SET(lserrno);
 	   SET_LSF_ERRMSG;
 	   XSRETURN_UNDEF;
@@ -1069,10 +1081,15 @@ ls_getstdin(self, on, max)
 	int	i, count;
    PPCODE:
 	tidlist = safemalloc(sizeof(int)*max);
-	if( count = ls_getstdin(on, tidlist, max) < 0 ){
+	if( (count = ls_getstdin(on, tidlist, max)) < 0 ){
+	   safefree(tidlist);
 	   STATUS_NATIVE_SET(lserrno);
 	   SET_LSF_ERRMSG;
 	   XSRETURN_UNDEF;
+	}
+	if(count == 0)
+	{
+	   XSRETURN_YES;   
 	}
 	for( i = 0; i < count; i++){
 	   XPUSHs(sv_2mortal(newSViv(tidlist[i])));
@@ -1335,7 +1352,7 @@ ls_rwrite(self, rfd, buf, len)
 	int	len
     PREINIT:
 	char *b;
-	int l;
+	STRLEN  l;
     CODE:
 	b = (char*)SvPV(buf,l);
 	if( len >= l ){
@@ -1366,6 +1383,7 @@ ls_rread(self, rfd, buf, len)
 	b = safemalloc(len);
 	RETVAL = ls_rread(rfd, b, len);
 	if( RETVAL < 0 ){
+	   safefree(b);
 	   STATUS_NATIVE_SET(lserrno);
 	   SET_LSF_ERRMSG;
     	   XSRETURN_UNDEF;
@@ -1552,6 +1570,8 @@ ls_lockhost(self, duration)
 	   SET_LSF_ERRMSG;
 	   RETVAL = 0;
 	}
+	else
+	RETVAL = 1;
     OUTPUT:
 	RETVAL
 
@@ -1742,11 +1762,11 @@ ls_errlog(self, fp, msg)
  # Miscellaneous
 
 int
-ls_fdbusy(self, fd)
+ls_fdbusy(self, fileH)
 	void	*self
-	int	fd
+	FILE *     fileH;
     CODE:
-	RETVAL = ls_fdbusy(fd);
+	RETVAL = ls_fdbusy(fileno(fileH));
     OUTPUT:
 	RETVAL
 

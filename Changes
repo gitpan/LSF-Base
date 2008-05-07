@@ -14,3 +14,9 @@ Revision history for Perl extension LSF::Base.
 	- Added support for other operating systems. Now works with
 	  Compaq Alpha, Linux, AIX and Solaris. Thanks to Ray Hookway at
 	  Compaq for Alpha changes.
+
+0.06 4/30/2008
+        - Updated for LSF 7.0 Update 2.
+
+	- Modify some APIs according to LSF 7.0 Update 2. Test all the 
+	  APIs on LSF 7.0 Update 2 on Linux 2.6 X86 and Solaris 10 X86_64. 
