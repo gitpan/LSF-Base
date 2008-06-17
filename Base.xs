@@ -216,6 +216,14 @@ ls_readconfenv(self, env, path)
 
 MODULE = LSF::Base		PACKAGE = LSF::Base::lsInfoPtr PREFIX = li_
 
+int
+li_nRes(self)
+	LSF_Base_lsInfo *self;
+    CODE:
+	RETVAL = self->nRes;
+    OUTPUT:
+	RETVAL
+
 void
 li_resTable(self)
 	LSF_Base_lsInfo *self;

@@ -62,6 +62,11 @@ Version 0.06 4/29/2008
 Based on Version 0.05,some enhancement of APIs were added to suitable for LSF 7.0 Update 2.
 All the APIs have been test in test.pl on Linux 2.6 and Solaris 10(X86_64) by perl 5.8.0.
 
+Version 0.07 6/13/2008
+
+Exported the element nRes in LSF::Base::lsInfoPtr.
+Added the document of the APIs. You can check it by perldoc.
+
 ISV Team
 Platform Computing Corporation
 support@platform.com
